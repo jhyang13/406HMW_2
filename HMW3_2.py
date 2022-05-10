@@ -1,15 +1,7 @@
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import math
 
-#define axis
-fig = plt.figure()
-ax1 = plt.axes(projection='3d')
-
-#define variables and functions
-#parameters
+#define parameters
 Qv = 413000
 Qb = 280000
 Qc = 280000
@@ -30,6 +22,8 @@ A = 7.5 * math.pow(10, 5)
 As = math.pow(math.pow(3, 0.5), n+1) * A
 Ac = A
 A2 = As
+
+#define functions
 #Temperature
 T = [i for i in range(654, 3272)]
 #Mu: shear modulus
@@ -62,6 +56,7 @@ for i in T:
 D_eff = []
 for i in range(0, 2618):
     D_eff.append(D_v[i] * (1 + 10 * Ac / math.pow(b, 2) * math.pow(sigma_s[i] / Mu[i], 2) * D_c[i] / D_v[i]))
+
 #high temperature power-law creep
 rate_highTcreep = []
 for i in range(0, 2618):
@@ -73,12 +68,46 @@ for i in range(0, 2618):
 #boundary diffusional flow
 rate_highTdiff = []
 for i in range(0, 2618):
-    rate_highTdiff = 42 * sigma_s[i] * Omega * 3.14 * delta / (k * T[i] * math.pow(d, 3)) * D_b[i]
+    rate_highTdiff.append(42 * sigma_s[i] * Omega * 3.14 * delta / (k * T[i] * math.pow(d, 3)) * D_b[i])
 #lattice diffusional flow
 rate_lowTdiff = []
 for i in range(0, 2618):
-    rate_lowTdiff = 42 * sigma_s[i] * Omega / (k * T[i] * math.pow(d, 2))*D_v[i]
+    rate_lowTdiff.append(42 * sigma_s[i] * Omega / (k * T[i] * math.pow(d, 2))*D_v[i])
 
-'''#plot
-surf1 = ax1.plot_surface(T, sigma_s, rate_highTcreep, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-plt.show()'''
+#plot
+plt.figure()
+plt.subplot(2,2,1)
+plt.plot(T, rate_highTcreep)
+plt.xlabel('T')
+plt.ylabel('rate_highTcreep')
+plt.subplot(2,2,2)
+plt.plot(T, rate_lowTcreep)
+plt.xlabel('T')
+plt.ylabel('rate_lowTcreep')
+plt.subplot(2,2,3)
+plt.plot(T, rate_highTdiff)
+plt.xlabel('T')
+plt.ylabel('rate_highTdiff')
+plt.subplot(2,2,4)
+plt.plot(T, rate_lowTdiff)
+plt.xlabel('T')
+plt.ylabel('rate_lowTdiff')
+
+plt.figure()
+plt.subplot(2,2,1)
+plt.plot(sigma_s, rate_highTcreep)
+plt.xlabel('Sigma_s')
+plt.ylabel('rate_highTcreep')
+plt.subplot(2,2,2)
+plt.plot(sigma_s, rate_lowTcreep)
+plt.xlabel('Sigma_s')
+plt.ylabel('rate_lowTcreep')
+plt.subplot(2,2,3)
+plt.plot(sigma_s, rate_highTdiff)
+plt.xlabel('Sigma_s')
+plt.ylabel('rate_highTdiff')
+plt.subplot(2,2,4)
+plt.plot(sigma_s, rate_lowTdiff)
+plt.xlabel('Sigma_s')
+plt.ylabel('rate_lowTdiff')
+plt.show()
