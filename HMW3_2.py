@@ -75,7 +75,7 @@ for i in range(0, 2618):
     rate_lowTdiff.append(42 * sigma_s[i] * Omega / (k * T[i] * math.pow(d, 2))*D_v[i])
 
 #plot
-plt.figure()
+'''plt.figure()
 plt.subplot(2,2,1)
 plt.plot(T, rate_highTcreep)
 plt.xlabel('T')
@@ -110,4 +110,77 @@ plt.subplot(2,2,4)
 plt.plot(sigma_s, rate_lowTdiff)
 plt.xlabel('Sigma_s')
 plt.ylabel('rate_lowTdiff')
+plt.show()'''
+
+#compare and seek the same value between two strain rates
+#rate_highTcreep vs rate_lowTcreep
+I1 = []
+for i in range(0, 2618):
+    if rate_highTcreep[i] == rate_lowTcreep[i]:
+        I1.append(i)
+#rate_highTcreep vs rate_highTdiff
+I2 = []
+for i in range(0, 2618):
+    if rate_highTcreep[i] == rate_highTdiff[i]:
+        I2.append(i)
+#rate_highTcreep vs rate_lowTdiff
+I3 = []
+for i in range(0, 2618):
+    if rate_highTcreep[i] == rate_lowTdiff[i]:
+        I3.append(i)
+#rate_lowTcreep vs rate_highTdiff
+I4 = []
+for i in range(0, 2618):
+    if rate_lowTcreep[i] == rate_highTdiff[i]:
+        I4.append(i)
+#rate_lowTcreep vs rate_lowTdiff
+I5 = []
+for i in range(0, 2618):
+    if rate_lowTcreep[i] == rate_lowTdiff[i]:
+        I5.append(i)
+#rate_highTdiff vs rate_lowTdiff
+I6 = []
+for i in range(0, 2618):
+    if rate_highTdiff[i] == rate_lowTdiff[i]:
+        I6.append(i)
+#find the corresponding sigma_s
+sigma_s1 = []
+T1 = []
+for i in I1:
+    sigma_s1.append(sigma_s[i])
+    T1.append(T[i])
+sigma_s2 = []
+T2 = []
+for i in I2:
+    sigma_s2.append(sigma_s[i])
+    T2.append(T[i])
+sigma_s3 = []
+T3 = []
+for i in I3:
+    sigma_s3.append(sigma_s[i])
+    T3.append(T[i])
+sigma_s4 = []
+T4 = []
+for i in I4:
+    sigma_s4.append(sigma_s[i])
+    T4.append(T[i])
+sigma_s5 = []
+T5 = []
+for i in I5:
+    sigma_s5.append(sigma_s[i])
+    T5.append(T[i])
+sigma_s6 = []
+T6 = []
+for i in I6:
+    sigma_s6.append(sigma_s[i])
+    T6.append(T[i])
+
+#plot HMW_2_2
+plt.figure()
+plt.plot(T1, sigma_s1)
+plt.plot(T2, sigma_s2)
+plt.plot(T3, sigma_s3)
+plt.plot(T4, sigma_s4)
+plt.plot(T5, sigma_s5)
+plt.plot(T6, sigma_s6)
 plt.show()
