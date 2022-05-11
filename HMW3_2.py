@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import math
+import numpy as np
 
 #define parameters
 Qv = 413000
@@ -13,7 +14,6 @@ D_0c = math.pow(10, -23)
 Mu_0 = math.pow(10, 4) * 6.12
 Mu_Temp_Dep = -0.42
 b = math.pow(10, -23) * 2.86
-k = math.pow(10, -23) * 1.38
 R = 8.314
 Omega = math.pow(10, -29) * 1.8
 delta = math.pow(10, -9) * 5
@@ -25,57 +25,35 @@ A2 = As
 
 #define functions
 #Temperature
-T = [i for i in range(654, 3272)]
+T = np.linspace(100, 3272, 100)
+T_homo = T/T_M
 #Mu: shear modulus
-Mu = []
-for i in T:
-    Mu.append(Mu_0 * (1 + (i - 300) / T_M * Mu_Temp_Dep))
+Mu = Mu_0 * (1 + (T - 300) / T_M * Mu_Temp_Dep)
 #sigma_s
-sigma_s = []
-i, j = 0, 0
-k = math.pow(10, -8)
-while i <= math.pow(10, -3):
-    j = j + 1
-    sigma_s.append(k)
-    k = k + 3 * math.pow(10, -7)
-    if j >= 2618:
-        break
+sigma_s = np.linspace(math.pow(10, -8), math.pow(10, -3), 100)
+sigma_s_homo = sigma_s / Mu
+T_homo,sigma_s_homo = np.meshgrid(T_homo, sigma_s_homo)
 #D_v
-D_v = []
-for i in T:
-    D_v.append(D_0v * math.exp(-Qv/(R * i)))
+D_v = D_0v * np.exp(-Qv/(R * T))
 #D_b
-D_b = []
-for i in T:
-    D_b.append(D_0b * math.exp(-Qb/(R * i)))
+D_b = D_0b * np.exp(-Qb/(R * T))
 #D_c
-D_c = []
-for i in T:
-    D_c.append(D_0c * math.exp(-Qc/(R * i)) / Ac)
+D_c = D_0c * np.exp(-Qc/(R * T))
 #D_eff
-D_eff = []
-for i in range(0, 2618):
-    D_eff.append(D_v[i] * (1 + 10 * Ac / math.pow(b, 2) * math.pow(sigma_s[i] / Mu[i], 2) * D_c[i] / D_v[i]))
+D_eff = D_v * (10 * Ac / math.pow(b, 2) * np.power(sigma_s_homo / Mu, 2) * D_c / D_v)
 
 #high temperature power-law creep
-rate_highTcreep = []
-for i in range(0, 2618):
-    rate_highTcreep.append(A2 * D_eff[i] * Mu[i] * b / (k * T[i])*(math.pow(sigma_s[i] / Mu[i], n)))
+rate_highTcreep = A2 * D_eff * Mu * b / (R * T)*(np.power(sigma_s_homo / Mu, n))
 #low temperature power-law creep
-rate_lowTcreep = []
-for i in range(0, 2618):
-    rate_lowTcreep.append(A2 * D_eff[i] * Mu[i] * b / (k * T[i])*(math.pow(sigma_s[i], n+2)/(math.pow(Mu[i],n))))
+rate_lowTcreep = A2 * D_eff * Mu * b / (R * T)*(np.power(sigma_s_homo, n+2)/(np.power(Mu, n)))
 #boundary diffusional flow
-rate_highTdiff = []
-for i in range(0, 2618):
-    rate_highTdiff.append(42 * sigma_s[i] * Omega * 3.14 * delta / (k * T[i] * math.pow(d, 3)) * D_b[i])
+rate_highTdiff = 42 * sigma_s_homo * Omega * 3.14 * delta / (R * T * math.pow(d, 3)) * D_b
 #lattice diffusional flow
-rate_lowTdiff = []
-for i in range(0, 2618):
-    rate_lowTdiff.append(42 * sigma_s[i] * Omega / (k * T[i] * math.pow(d, 2))*D_v[i])
+rate_lowTdiff = 42 * sigma_s_homo * Omega / (R * T * math.pow(d, 2))*D_v
 
-#plot
-'''plt.figure()
+'''
+#plot rate vs T
+plt.figure()
 plt.subplot(2,2,1)
 plt.plot(T, rate_highTcreep)
 plt.xlabel('T')
@@ -93,6 +71,7 @@ plt.plot(T, rate_lowTdiff)
 plt.xlabel('T')
 plt.ylabel('rate_lowTdiff')
 
+#plot rate vs sigma_s
 plt.figure()
 plt.subplot(2,2,1)
 plt.plot(sigma_s, rate_highTcreep)
@@ -110,77 +89,55 @@ plt.subplot(2,2,4)
 plt.plot(sigma_s, rate_lowTdiff)
 plt.xlabel('Sigma_s')
 plt.ylabel('rate_lowTdiff')
-plt.show()'''
-
-#compare and seek the same value between two strain rates
-#rate_highTcreep vs rate_lowTcreep
-I1 = []
-for i in range(0, 2618):
-    if rate_highTcreep[i] == rate_lowTcreep[i]:
-        I1.append(i)
-#rate_highTcreep vs rate_highTdiff
-I2 = []
-for i in range(0, 2618):
-    if rate_highTcreep[i] == rate_highTdiff[i]:
-        I2.append(i)
-#rate_highTcreep vs rate_lowTdiff
-I3 = []
-for i in range(0, 2618):
-    if rate_highTcreep[i] == rate_lowTdiff[i]:
-        I3.append(i)
-#rate_lowTcreep vs rate_highTdiff
-I4 = []
-for i in range(0, 2618):
-    if rate_lowTcreep[i] == rate_highTdiff[i]:
-        I4.append(i)
-#rate_lowTcreep vs rate_lowTdiff
-I5 = []
-for i in range(0, 2618):
-    if rate_lowTcreep[i] == rate_lowTdiff[i]:
-        I5.append(i)
-#rate_highTdiff vs rate_lowTdiff
-I6 = []
-for i in range(0, 2618):
-    if rate_highTdiff[i] == rate_lowTdiff[i]:
-        I6.append(i)
-#find the corresponding sigma_s
-sigma_s1 = []
-T1 = []
-for i in I1:
-    sigma_s1.append(sigma_s[i])
-    T1.append(T[i])
-sigma_s2 = []
-T2 = []
-for i in I2:
-    sigma_s2.append(sigma_s[i])
-    T2.append(T[i])
-sigma_s3 = []
-T3 = []
-for i in I3:
-    sigma_s3.append(sigma_s[i])
-    T3.append(T[i])
-sigma_s4 = []
-T4 = []
-for i in I4:
-    sigma_s4.append(sigma_s[i])
-    T4.append(T[i])
-sigma_s5 = []
-T5 = []
-for i in I5:
-    sigma_s5.append(sigma_s[i])
-    T5.append(T[i])
-sigma_s6 = []
-T6 = []
-for i in I6:
-    sigma_s6.append(sigma_s[i])
-    T6.append(T[i])
-
-#plot HMW_2_2
-plt.figure()
-plt.plot(T1, sigma_s1)
-plt.plot(T2, sigma_s2)
-plt.plot(T3, sigma_s3)
-plt.plot(T4, sigma_s4)
-plt.plot(T5, sigma_s5)
-plt.plot(T6, sigma_s6)
 plt.show()
+'''
+
+#find the max creep rate
+creep_mech=np.empty((4, 100, 100))
+mech=np.ones((100, 100))
+rate=np.ones((100, 100))
+for i in range(100):
+    for j in range(100):
+        creep_mech[0][i][j] = rate_highTcreep[i][j]
+        creep_mech[1][i][j] = rate_lowTcreep[i][j]
+        creep_mech[2][i][j] = rate_highTdiff[i][j]
+        creep_mech[3][i][j] = rate_lowTdiff[i][j]
+        rate[i][j]=np.max([creep_mech[0][i][j],creep_mech[1][i][j],
+                              creep_mech[2][i][j],creep_mech[3][i][j]])
+        mech[i][j]=np.argmax([creep_mech[0][i][j],creep_mech[1][i][j],
+                              creep_mech[2][i][j],creep_mech[3][i][j]])
+
+#select rate
+selected_rate = 10**-40
+mark = np.empty((100, 100))
+for i in range(100):
+    for j in range(100):
+        if abs(rate[i][j]-selected_rate) < 0.55*selected_rate:
+            mark[i][j] = 1
+mark = np.ma.masked_where(mark == 0, mark)
+#select rate
+selected_rate = 10**-25
+mark2 = np.empty((100, 100))
+for i in range(100):
+    for j in range(100):
+        if abs(rate[i][j]-selected_rate) < 0.6*selected_rate:
+            mark2[i][j] = 1
+mark2 = np.ma.masked_where(mark2 == 0, mark2)
+
+#plot
+fig, ax = plt.subplots(1, 1, figsize=(4, 4))
+ax.set_yscale('log')
+#ax.axis('equal')
+ax.imshow(mech, cmap='Pastel1',
+          extent=[T_homo.min(), T_homo.max(), sigma_s_homo.max(), sigma_s_homo.min()], aspect=1/5)
+ax.imshow(mark, cmap='gray',
+          extent=[T_homo.min(), T_homo.max(), sigma_s_homo.max(), sigma_s_homo.min()], aspect=1/5)
+ax.imshow(mark2, cmap='gray',
+          extent=[T_homo.min(), T_homo.max(), sigma_s_homo.max(), sigma_s_homo.min()], aspect=1/5)
+ax.invert_yaxis()
+ax.set_xlabel('T/Tm')
+ax.set_ylabel('Sigma/mu')
+fig.tight_layout()
+plt.show()
+
+
